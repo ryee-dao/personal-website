@@ -28,7 +28,7 @@ Colours are the variables at the top of `src/styles.css`.
 | `src/demos/breakDemo.ts` | Break enforcer: the window that grows over the site |
 | `src/demos/danceDemo.ts` | Dance coach: animated figure, generated beat |
 | `src/demos/listingsDemo.ts` | Listings: made-up sample data, nothing is scraped |
-| `skeletons/` | The design explorations (not part of the built site) |
+| `public/CNAME` | The custom domain (ryandao.dev) |
 
 ## Deploy to GitHub Pages
 
@@ -37,3 +37,7 @@ Colours are the variables at the top of `src/styles.css`.
 3. Every push to `main` now builds and publishes the site (`.github/workflows/deploy.yml`).
 
 The build uses relative paths, so it works at `username.github.io` and at `username.github.io/repo-name` without changes.
+
+## License
+
+MIT. See `LICENSE`.
