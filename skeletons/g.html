@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G · Case Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0f0d0c; --panel:#171412; --ink:#efe6da; --muted:#9a8c7e; --line:#2c2622; --wire:#40372f; --sig:#ff5a36; }
+  :root[data-loc="va"] { --sig:#3fd0a4; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#efe7da; --panel:#f8f2e8; --ink:#1d1815; --muted:#6d6055; --line:#d6c9b6; --wire:#c2b39c; --sig:#c93a1c; }
+    :root[data-loc="va"] { --sig:#0f7f62; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.6 ui-sans-serif,system-ui,sans-serif; }
+  h1,h2,h3 { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; line-height:1.08; margin:0; text-wrap:balance; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  .sig { color:var(--sig); transition:color .5s; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 16px 110px; }
+
+  /* status bar: the site quietly reporting on itself */
+  .status { position:sticky; top:0; z-index:5; background:color-mix(in srgb,var(--bg) 88%,transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .status div { max-width:1080px; margin:0 auto; padding:10px 16px; display:flex; gap:8px 22px; flex-wrap:wrap; align-items:center; color:var(--muted); }
+  .status a { color:var(--muted); text-decoration:none; }
+  .status b { color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; }
+  .status button { background:none; border:1px solid var(--line); border-radius:4px; padding:3px 10px; }
+  .status .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--sig); margin-right:6px; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 50% { opacity:.25; } }
+  .push { margin-left:auto; }
+
+  .hero { display:grid; gap:20px; align-items:center; padding:7vh 0 6vh; }
+  @media (min-width:860px) { .hero { grid-template-columns:1.3fr 1fr; min-height:70vh; } }
+  .hero h1 { font-size:clamp(36px,6vw,64px); }
+  .hero p { color:var(--muted); font-size:19px; max-width:44ch; margin:18px 0 0; }
+  .scan { border:1px solid var(--line); background:var(--panel); padding:14px; position:relative; }
+  .scan svg { width:100%; height:auto; display:block; }
+  .scan line { stroke:var(--muted); stroke-width:2; }
+  .scan circle { fill:var(--sig); transition:fill .5s; }
+  .scan .cap { display:flex; justify-content:space-between; color:var(--muted); margin-top:8px; }
+  .scan::before { content:""; position:absolute; left:0; right:0; top:0; height:2px; background:var(--sig); opacity:.5; animation:sweep 3.5s linear infinite; }
+  @keyframes sweep { to { top:100%; } }
+
+  .eyebrow { color:var(--muted); margin:0 0 14px; display:flex; gap:12px; align-items:center; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:var(--line); }
+  section { margin-bottom:64px; }
+
+  /* case files: my problem → what I built → live readout */
+  .case { display:grid; gap:6px 24px; width:100%; text-align:left; background:none; border:0; border-top:1px solid var(--line); padding:22px 0; }
+  .case:last-of-type { border-bottom:1px solid var(--line); }
+  @media (min-width:860px) { .case { grid-template-columns:60px 1.2fr 1fr 200px; align-items:center; } }
+  .case:hover h3, .case:focus-visible h3 { color:var(--sig); } .case:focus-visible { outline:1px solid var(--sig); outline-offset:4px; }
+  .case .n { color:var(--sig); }
+  .case h3 { font-size:clamp(24px,3.2vw,34px); transition:color .2s; }
+  .case .fix { color:var(--muted); }
+  .case .read { color:var(--muted); line-height:1.7; } .case .read b { color:var(--ink); font-variant-numeric:tabular-nums; }
+  .room { display:none; border:1px solid var(--line); background:var(--panel); padding:18px; margin-top:18px; gap:16px; }
+  .room.on { display:grid; }
+  @media (min-width:860px) { .room { grid-template-columns:280px 1fr; } }
+  .room h3 { font-size:24px; } .room p { color:var(--muted); margin:8px 0 0; }
+  .wire { border:1px dashed var(--wire); color:var(--muted); font-size:14px; display:grid; place-items:center; text-align:center; padding:14px; min-height:300px; }
+
+  .grid3 { display:grid; gap:12px; } @media (min-width:860px) { .grid3 { grid-template-columns:repeat(3,1fr); } }
+  .cell { border:1px solid var(--line); background:var(--panel); padding:20px; }
+  .cell h3 { font-size:21px; margin:8px 0; } .cell p { color:var(--muted); margin:0; font-size:15.5px; }
+  .big { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:40px; line-height:1; }
+  .contact a { color:var(--ink); font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:clamp(24px,4vw,40px); text-decoration-color:var(--sig); text-underline-offset:.15em; display:block; margin-bottom:6px; }
+  .contact .small a { display:inline; font-size:17px; font-family:inherit; font-weight:600; margin-right:18px; }
+
+  /* the break: screen goes dark, deadpan */
+  .break { position:fixed; inset:0; z-index:20; background:#000; color:#efe6da; display:none; place-items:center; text-align:center; padding:24px; }
+  .break.on { display:grid; animation:cut .5s steps(4); }
+  @keyframes cut { 0% { opacity:0; } 30% { opacity:1; } 45% { opacity:.2; } 100% { opacity:1; } }
+  .break h2 { font-size:clamp(28px,5vw,48px); max-width:18ch; margin:0 auto; }
+  .break p { color:#9a8c7e; max-width:44ch; margin:14px auto; }
+  .break .count { font-family:"JetBrains Mono",monospace; font-size:88px; color:var(--sig); line-height:1.1; }
+  .break button { background:none; border:1px solid #40372f; color:#9a8c7e; padding:6px 14px; border-radius:4px; margin-top:10px; }
+  @media (prefers-reduced-motion: reduce) { .status .dot, .scan::before, .break.on { animation:none; } }
+</style>
+</head>
+<body>
+<div class="status mono"><div>
+  <a href="index.html">← skeletons</a>
+  <span><span class="dot"></span>Currently in <b id="loc">Virginia</b></span>
+  <button id="swap" class="mono">switch state</button>
+  <span class="push">here <b id="here">0:00</b></span>
+  <span>break in <b id="left">0:25</b></span>
+</div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="mono sig" style="margin:0 0 14px">[YOUR NAME] // builds things</p>
+      <h1>I build software to fix my own problems. Turns out other people have the <span class="sig">same ones.</span></h1>
+      <p>Automations, internal tools, websites. This page is already running three of mine on you. It's fine. Probably.</p>
+    </div>
+    <div class="scan">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <g id="bones">
+          <line x1="150" y1="92" x2="150" y2="190"/><line id="aL" x1="150" y1="112" x2="95" y2="150"/><line id="aR" x1="150" y1="112" x2="205" y2="150"/>
+          <line x1="150" y1="190" x2="118" y2="270"/><line x1="150" y1="190" x2="182" y2="270"/>
+        </g>
+        <circle id="hd" cx="150" cy="62" r="20"/><circle cx="150" cy="112" r="5"/><circle id="hL" cx="95" cy="150" r="6"/><circle id="hR" cx="205" cy="150" r="6"/>
+        <circle cx="150" cy="190" r="5"/><circle cx="118" cy="270" r="5"/><circle cx="182" cy="270" r="5"/>
+      </svg>
+      <div class="cap mono"><span>subject: you</span><span>match <b id="match">0</b>%</span></div>
+    </div>
+  </header>
+
+  <section>
+    <p class="eyebrow mono">Case files · three problems I had</p>
+    <button class="case" data-room="break">
+      <span class="n mono">01</span>
+      <h3>"I can't stop working."</h3>
+      <span class="fix">So I built a break enforcer that locks me out of my own screen.</span>
+      <span class="read mono">running on you<br>lockout in <b id="left2">0:25</b></span>
+    </button>
+    <button class="case" data-room="dance">
+      <span class="n mono">02</span>
+      <h3>"I hate home workouts."</h3>
+      <span class="fix">So I built a dance game that scores my moves through the webcam.</span>
+      <span class="read mono">tracking your pointer<br>waves <b id="waves">0</b></span>
+    </button>
+    <button class="case" data-room="listings">
+      <span class="n mono">03</span>
+      <h3>"Where are the good property deals?"</h3>
+      <span class="fix">So I built a scraper that turned thousands of listings into answers.</span>
+      <span class="read mono">logging this visit<br><b id="px">0</b> px · <b id="clicks">0</b> clicks</span>
+    </button>
+    <div class="room" id="room">
+      <div><h3 id="rt"></h3><p>The longer story, a few sentences.</p><p>What I learned, one honest line.</p></div>
+      <div class="wire" id="rw"></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow mono">How fast I pick things up</p>
+    <div class="grid3">
+      <div class="cell"><div class="big sig">2 days</div><h3>to get useful with Claude Code</h3><p>TODO: one line on what I shipped with it.</p></div>
+      <div class="cell"><div class="big sig">2 weeks</div><h3>to learn Java for a real job</h3><p>TODO: confirm whether to name the company.</p></div>
+      <div class="cell"><div class="big sig">Every month</div><h3>I swap states and start over</h3><p>Pennsylvania one month, Virginia the next. New desk, new routine, same work. Try the switch up top.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow mono">Things I'll talk about for an hour</p>
+    <div class="grid3">
+      <div class="cell"><span class="mono sig">take 01</span><h3>AI is amazing.</h3><p>TODO: a few sentences in my voice.</p></div>
+      <div class="cell"><span class="mono sig">take 02</span><h3>People also overestimate it.</h3><p>TODO: a few sentences in my voice.</p></div>
+      <div class="cell"><span class="mono sig">take 03</span><h3>Yes, I have a conspiracy theory.</h3><p>TODO: a harmless, funny one.</p></div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <p class="eyebrow mono">Got a problem like these?</p>
+    <a href="#">[EMAIL]</a>
+    <p class="small"><a href="#">GitHub</a><a href="#">LinkedIn</a></p>
+  </section>
+</div>
+
+<div class="break" id="break" role="dialog" aria-modal="true" aria-label="Break time">
+  <div>
+    <p class="mono">break enforcer // demo</p>
+    <h2>You've been here 25 seconds. That's enough.</h2>
+    <p>On my machine this happens every 50 minutes and there is no skip button. I built it because I don't stop on my own.</p>
+    <div class="count" id="count">10</div>
+    <button id="skip" class="mono">demo: skip</button>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const mmss = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+  // location: alternates by month (which month is which is a guess, editable), or flip it by hand
+  const names = { pa: 'Pennsylvania', va: 'Virginia' };
+  const setLoc = (l) => { document.documentElement.dataset.loc = l; $('loc').textContent = names[l]; };
+  setLoc(new Date().getMonth() % 2 ? 'va' : 'pa');
+  $('swap').onclick = () => setLoc(document.documentElement.dataset.loc === 'va' ? 'pa' : 'va');
+
+  // pointer tracking → the skeleton
+  const svg = document.querySelector('.scan svg');
+  let px = 0, last = null, waves = 0, side = 0, clicks = 0;
+  addEventListener('pointermove', (e) => {
+    const r = svg.getBoundingClientRect();
+    const sx = r.left + r.width / 2, sy = r.top + r.height * (112 / 300);
+    const a = Math.atan2(e.clientY - sy, e.clientX - sx), L = 66;
+    const dx = Math.abs(Math.cos(a) * L), dy = Math.sin(a) * L;
+    [['aR', 'hR', 150 + dx], ['aL', 'hL', 150 - dx]].forEach(([arm, hand, x]) => {
+      $(arm).setAttribute('x2', x); $(arm).setAttribute('y2', 112 + dy);
+      $(hand).setAttribute('cx', x); $(hand).setAttribute('cy', 112 + dy);
+    });
+    $('match').textContent = Math.round(50 - (dy / L) * 50);
+    if (last) px += Math.hypot(e.clientX - last.x, e.clientY - last.y);
+    last = { x: e.clientX, y: e.clientY };
+    const now = dy < -30 ? 1 : dy > 30 ? -1 : side;
+    if (now !== side) { if (now === 1) $('waves').textContent = ++waves; side = now; }
+    $('px').textContent = Math.round(px).toLocaleString();
+  });
+  addEventListener('click', () => $('clicks').textContent = ++clicks);
+
+  // break enforcer: runs once per visit
+  const WORK = 25, REST = 10;
+  let t = 0, rest = 0, done = false;
+  const endBreak = () => { rest = 0; done = true; $('break').classList.remove('on'); $('left').textContent = $('left2').textContent = 'done'; };
+  $('skip').onclick = endBreak;
+  setInterval(() => {
+    if (rest > 0) { $('count').textContent = --rest; if (rest === 0) endBreak(); return; }
+    $('here').textContent = mmss(++t);
+    if (done) return;
+    const left = Math.max(0, WORK - t);
+    $('left').textContent = $('left2').textContent = mmss(left);
+    if (left === 0) { rest = REST; $('count').textContent = REST; $('break').classList.add('on'); $('skip').focus(); }
+  }, 1000);
+
+  const rooms = {
+    break: ['Break enforcer', 'Set your own timer · preview the lockout · "demo: skip" always visible'],
+    dance: ['Dance game', 'Target pose · webcam + skeleton overlay (or keyboard mode) · score · generated beat'],
+    listings: ['Real estate listings scraper', 'Filters · two charts (price trend, price per sq ft) · sortable table of sample listings'],
+  };
+  document.querySelectorAll('.case').forEach((b) => b.addEventListener('click', () => {
+    [$('rt').textContent, $('rw').textContent] = rooms[b.dataset.room];
+    $('room').classList.add('on'); $('room').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }));
+</script>
+</body>
+</html>

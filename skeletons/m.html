@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M · Before / After</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sk.css">
+<style>
+  .intro { padding:2vh 0 20px; } .intro h1 { font-size:clamp(28px,4.4vw,48px); max-width:20ch; } .intro h1 em { font-style:normal; color:var(--pink); }
+  .intro p { color:var(--muted); margin:10px 0 0; }
+  .cmp { position:relative; height:clamp(300px,46vh,400px); border-radius:20px; overflow:hidden; border:1px solid var(--line); margin-bottom:8px; user-select:none; -webkit-user-select:none; }
+  .side { position:absolute; inset:0; padding:22px; display:flex; flex-direction:column; gap:8px; }
+  .before { background:#2a2531; color:#cfc8dc; }
+  @media (prefers-color-scheme: light) { .before { background:#dcd6e6; color:#4a4460; } }
+  .after { background:var(--surface); clip-path:inset(0 0 0 var(--x)); align-items:flex-end; text-align:right; }
+  .side h2 { font-size:clamp(20px,3vw,30px); max-width:16ch; } .side p { margin:0; max-width:34ch; font-size:14.5px; opacity:.85; }
+  .before h2 { font-family:Caveat,cursive; font-size:clamp(28px,4vw,40px); font-weight:600; }
+  .tag { font-size:12px; letter-spacing:.09em; text-transform:uppercase; font-weight:700; } .after .tag { color:var(--k); }
+  .mess { position:absolute; left:22px; bottom:18px; display:flex; gap:14px; align-items:end; } .mess svg { width:70px; }
+  .tabs { display:flex; flex-wrap:wrap; gap:3px; max-width:230px; } .tabs i { width:34px; height:16px; border-radius:5px 5px 0 0; background:currentColor; opacity:.35; }
+  .tool { position:absolute; right:22px; bottom:18px; width:min(54%,420px); } .tool .wire { min-height:120px; border-color:var(--k); }
+  .handle { position:absolute; top:0; bottom:0; left:var(--x); width:4px; margin-left:-2px; background:var(--ink); pointer-events:none; }
+  .handle::after { content:"⇆"; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:40px; height:40px; border-radius:50%; background:var(--ink); color:var(--bg); display:grid; place-items:center; font-weight:700; }
+  .cmp input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:ew-resize; }
+  .meter { display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:26px; } .meter b { color:var(--ink); font-variant-numeric:tabular-nums; }
+  .end { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:22px; } .end p { color:var(--muted); margin:8px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><a href="index.html">← skeletons</a><a href="#contact">say hello</a></nav>
+  <header class="intro">
+    <h1>I'm [YOUR NAME]. I had three problems. <em>Drag to fix them.</em></h1>
+    <p>Each one is something that annoyed me until I built software for it.</p>
+  </header>
+
+  <div class="cmp" style="--k:var(--pink)" data-a="hours at desk" data-from="14" data-to="8" data-unit="h">
+    <div class="side before"><span class="tag">before</span><h2>"just one more thing." 11:47 pm.</h2><p>I'm a workaholic. Reminders didn't work because I ignored them.</p>
+      <div class="mess"><svg data-pose="type"></svg></div></div>
+    <div class="side after"><span class="tag">after · break enforcer</span><h2>A window that grows until I stop.</h2><p>It moves back if I push it away. One rule: don't click stop.</p>
+      <div class="tool"><div class="wire">Live demo: timer → growing window → full-screen break</div></div></div>
+    <div class="handle"></div><input type="range" min="0" max="100" value="62" aria-label="Before and after: break enforcer">
+  </div>
+  <div class="meter"><span>hours at my desk without moving</span><b></b></div>
+
+  <div class="cmp" style="--k:var(--yellow)" data-a="tabs open" data-from="41" data-to="1" data-unit="">
+    <div class="side before"><span class="tag">before</span><h2>41 tabs. which one was the cheap one?</h2><p>I wanted investment properties and was comparing them by memory.</p>
+      <div class="mess"><svg data-pose="look"></svg><div class="tabs"></div></div></div>
+    <div class="side after"><span class="tag">after · listings scraper</span><h2>The whole market in one table.</h2><p>For sale, for rent and sold, collected every day. Sample data on this site.</p>
+      <div class="tool"><div class="wire">Live demo: filters · price per sq ft · price history</div></div></div>
+    <div class="handle"></div><input type="range" min="0" max="100" value="62" aria-label="Before and after: listings scraper">
+  </div>
+  <div class="meter"><span>browser tabs open</span><b></b></div>
+
+  <div class="cmp" style="--k:var(--mint)" data-a="workouts skipped" data-from="5" data-to="0" data-unit="/wk">
+    <div class="side before"><span class="tag">before</span><h2>20 burpees. again. no.</h2><p>I needed exercise and hated every home workout I tried.</p>
+      <div class="mess"><svg data-pose="burpee"></svg></div></div>
+    <div class="side after"><span class="tag">after · dance coach</span><h2>Put on any song and copy the coach.</h2><p>It finds the beat and makes up a routine from 2,411 moves. No camera, no score.</p>
+      <div class="tool"><div class="wire">Live demo: the coach dancing · NOW and NEXT cards</div></div></div>
+    <div class="handle"></div><input type="range" min="0" max="100" value="62" aria-label="Before and after: dance coach">
+  </div>
+  <div class="meter"><span>workouts skipped per week</span><b></b></div>
+
+  <div class="end" id="contact"><span class="label">What's your "before"?</span><h2>[EMAIL]</h2><p>GitHub · LinkedIn · TODO: two warm sentences about me, PA ⇄ VA, learns fast.</p></div>
+</div>
+<script src="sk.js"></script>
+<script>
+  document.querySelector('.tabs').innerHTML = '<i></i>'.repeat(41);
+  const guys = [];
+  document.querySelectorAll('.cmp').forEach((c) => {
+    const input = c.querySelector('input'), out = c.nextElementSibling.querySelector('b'), svg = c.querySelector('.mess svg'), draw = makeGuy(svg);
+    const from = +c.dataset.from, to = +c.dataset.to;
+    const set = () => { const fixed = 1 - input.value / 100; c.style.setProperty('--x', input.value + '%'); out.textContent = Math.round(from + (to - from) * fixed) + c.dataset.unit; c.fixed = fixed; };
+    input.addEventListener('input', set); set();
+    guys.push(() => draw(c.fixed > 0.7 ? 'dance' : svg.dataset.pose, performance.now() / 1000));
+  });
+  const loop = () => { guys.forEach((g) => g()); requestAnimationFrame(loop); }; loop();
+</script>
+</body>
+</html>

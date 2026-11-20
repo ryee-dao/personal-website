@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E · The Shapeshifter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f7efe2; --ink:#2a211c; --muted:#77675b; --card:#fffaf2; --line:#e6d8c2; --wire:#cfbda3;
+          --clay:#cf5a38; --sage:#5f8257; --honey:#c98a14; --plum:#8a5a7c; --c:var(--ink); --tint:var(--bg); }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1714; --ink:#f3e9dc; --muted:#a99a8b; --card:#27211c; --line:#3b322a; --wire:#574a3e;
+            --clay:#f08a68; --sage:#9dbb95; --honey:#f0c060; --plum:#cf9fc0; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--tint); color:var(--ink); font:17px/1.6 ui-sans-serif,system-ui,sans-serif; min-height:100vh; transition:background .6s; }
+  body[data-room="listings"] { --c:var(--sage);  --tint:color-mix(in srgb,var(--sage) 12%,var(--bg)); }
+  body[data-room="break"]    { --c:var(--clay);  --tint:color-mix(in srgb,var(--clay) 11%,var(--bg)); }
+  body[data-room="dance"]    { --c:var(--honey); --tint:color-mix(in srgb,var(--honey) 14%,var(--bg)); }
+  body[data-room="me"]       { --c:var(--plum);  --tint:color-mix(in srgb,var(--plum) 10%,var(--bg)); }
+  h1,h2,h3 { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; line-height:1.1; margin:0; text-wrap:balance; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 16px 48px; }
+
+  nav { display:flex; justify-content:space-between; align-items:center; padding:16px 0; font-size:15px; }
+  nav a { color:var(--muted); text-decoration:none; }
+  nav .me { background:none; border:1px solid var(--line); border-radius:999px; padding:6px 16px; }
+
+  /* intro: big when idle, tucks away once a problem is picked */
+  .intro { padding:7vh 0 28px; transition:padding .4s; }
+  .intro h1 { font-size:clamp(34px,6vw,60px); max-width:16ch; transition:font-size .4s; }
+  .intro h1 em { font-style:normal; color:var(--c); transition:color .4s; }
+  .intro p { color:var(--muted); font-size:19px; margin:16px 0 0; max-width:46ch; }
+  body[data-room] .intro { padding:4px 0 16px; }
+  body[data-room] .intro h1 { font-size:clamp(20px,2.4vw,26px); max-width:none; }
+  body[data-room] .intro p { display:none; }
+
+  /* problems: cards when idle, a tab strip once chosen */
+  .ask { font-family:Caveat,cursive; font-size:24px; color:var(--muted); margin:0 0 8px; }
+  body[data-room] .ask { display:none; }
+  .problems { display:grid; gap:12px; }
+  @media (min-width:760px) { .problems { grid-template-columns:repeat(3,1fr); } }
+  .problem { text-align:left; background:var(--card); border:1px solid var(--line); border-radius:22px; padding:20px; border-bottom:5px solid var(--k);
+             transition:transform .2s, padding .3s; }
+  .problem:hover, .problem:focus-visible { transform:translateY(-3px); outline:none; border-color:var(--k); }
+  .problem .q { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:21px; line-height:1.2; display:block; }
+  .problem .a { color:var(--muted); font-size:15px; display:block; margin-top:8px; }
+  .problem .hat { display:inline-block; margin-top:14px; font-size:13px; font-weight:600; color:var(--k); }
+  body[data-room] .problems { display:flex; flex-wrap:wrap; gap:8px; }
+  body[data-room] .problem { padding:8px 16px; border-radius:999px; border-bottom-width:1px; }
+  body[data-room] .problem .q { font-size:15px; }
+  body[data-room] .problem .a, body[data-room] .problem .hat { display:none; }
+  .problem[aria-pressed="true"] { background:var(--k); border-color:var(--k); color:var(--bg); }
+
+  /* the stage: each room has its own shape */
+  .room { display:none; margin-top:18px; gap:14px; }
+  body[data-room="listings"] #listings, body[data-room="break"] #break, body[data-room="dance"] #dance, body[data-room="me"] #me { display:grid; animation:in .45s ease; }
+  @keyframes in { from { opacity:0; transform:translateY(16px) scale(.985); } }
+  @media (prefers-reduced-motion: reduce) { body, .intro, .intro h1, .problem { transition:none; } .room { animation:none !important; } }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:18px; }
+  .story h2 { font-size:26px; margin-bottom:8px; }
+  .story p { margin:0 0 8px; color:var(--muted); }
+  .story .hat { font-family:Caveat,cursive; font-size:22px; color:var(--c); }
+  .wire { border:2px dashed var(--wire); border-radius:14px; color:var(--muted); font-size:14px; display:grid; place-items:center; text-align:center; padding:14px; min-height:80px; }
+
+  /* listings = a dashboard */
+  @media (min-width:900px) { #listings { grid-template-columns:260px 1fr; } }
+  #listings .dash { display:grid; gap:12px; }
+  #listings .charts { display:grid; gap:12px; } @media (min-width:640px) { #listings .charts { grid-template-columns:1fr 1fr; } }
+  /* break = one quiet thing in the middle */
+  #break { justify-items:center; text-align:center; }
+  #break .story { max-width:520px; border:0; background:none; }
+  #break .ring { width:min(300px,70vw); aspect-ratio:1; border-radius:50%; border:10px solid var(--c); display:grid; place-items:center; color:var(--muted); font-size:14px; padding:24px; }
+  /* dance = a dark stage, two up */
+  #dance .floor { background:#1c1613; color:#f3e9dc; border-radius:22px; padding:16px; display:grid; gap:12px; }
+  @media (min-width:700px) { #dance .floor { grid-template-columns:1fr 1fr; } #dance .floor .bar { grid-column:1 / -1; } }
+  #dance .wire { border-color:#6a5a4c; color:#c9b9a8; min-height:260px; } #dance .bar { min-height:60px; }
+  /* me = the desk */
+  #me .desk { position:relative; height:440px; border-radius:22px; overflow:hidden; border:1px solid var(--line);
+              background:repeating-linear-gradient(92deg,color-mix(in srgb,var(--honey) 22%,var(--card)) 0 90px,color-mix(in srgb,var(--honey) 30%,var(--card)) 90px 93px); }
+  .thing { position:absolute; border:0; padding:14px; background:var(--card); box-shadow:0 8px 20px rgba(40,20,5,.25); transform:rotate(var(--r)); cursor:grab; touch-action:none;
+           font-family:Caveat,cursive; font-size:22px; line-height:1.15; width:150px; min-height:110px; text-align:left; }
+  .thing.note { background:#f2cf63; color:#2a211c; } .thing.dragging { cursor:grabbing; z-index:9; }
+  .tall { min-height:220px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="index.html">← skeletons</a>
+    <button class="me" data-room="me">About me + say hello</button>
+  </nav>
+
+  <header class="intro">
+    <h1>Hi, I'm [YOUR NAME]. I become whatever the problem needs: <em id="hat">a data person.</em></h1>
+    <p>I build automations, internal tools, and websites. No two jobs look alike, so neither do my projects. Watch this page change shape.</p>
+  </header>
+
+  <p class="ask">pick a problem ↓</p>
+  <div class="problems">
+    <button class="problem" style="--k:var(--sage)" data-room="listings">
+      <span class="q">"I can't keep up with the housing market."</span>
+      <span class="a">So I built a scraper that turns thousands of listings into one clear picture.</span>
+      <span class="hat">I became: a data person →</span>
+    </button>
+    <button class="problem" style="--k:var(--clay)" data-room="break">
+      <span class="q">"I never step away from my desk."</span>
+      <span class="a">So I built a timer that takes over the screen until you've rested.</span>
+      <span class="hat">I became: a desktop app person →</span>
+    </button>
+    <button class="problem" style="--k:var(--honey)" data-room="dance">
+      <span class="q">"I want exercise to feel like play."</span>
+      <span class="a">So I built a dance game that watches your moves through the webcam.</span>
+      <span class="hat">I became: a game person →</span>
+    </button>
+  </div>
+
+  <section class="room" id="listings">
+    <div class="panel story"><p class="hat">shape: a dashboard</p><h2>Real estate listings scraper</h2><p>Why I built it: a few sentences.</p><p>What I learned: one honest line.</p></div>
+    <div class="dash">
+      <div class="panel"><div class="wire">Filters: city · beds · price range · search</div></div>
+      <div class="charts"><div class="panel"><div class="wire tall">Chart: price trend</div></div><div class="panel"><div class="wire tall">Chart: price per sq ft</div></div></div>
+      <div class="panel"><div class="wire tall">Sortable table of sample listings</div></div>
+    </div>
+  </section>
+
+  <section class="room" id="break">
+    <div class="ring">20s work timer<br>then the break takes over the whole screen<br>("demo: skip" always visible)</div>
+    <div class="panel story"><p class="hat">shape: one quiet thing</p><h2>Break enforcer</h2><p>Why I built it: a few sentences.</p><p>What I learned: one honest line.</p></div>
+  </section>
+
+  <section class="room" id="dance">
+    <div class="floor">
+      <div class="wire">Target pose</div>
+      <div class="wire">Webcam + skeleton overlay<br>(or keyboard mode)</div>
+      <div class="wire bar">Score · beat · Start / Use keyboard instead</div>
+    </div>
+    <div class="panel story"><p class="hat">shape: a stage</p><h2>Dance game</h2><p>Why I built it: a few sentences.</p><p>What I learned: one honest line.</p></div>
+  </section>
+
+  <section class="room" id="me">
+    <div class="panel story"><p class="hat">shape: my desk (drag things)</p><h2>About me</h2><p>TODO: short, warm, first person.</p></div>
+    <div class="desk" id="desk">
+      <button class="thing note" style="left:6%;top:12%;--r:-5deg">TODO: who I am, in a few lines</button>
+      <button class="thing" style="left:36%;top:38%;--r:3deg">photo of me</button>
+      <button class="thing note" style="left:62%;top:10%;--r:6deg">how I work with people</button>
+      <button class="thing" style="left:58%;top:56%;--r:-3deg">postcard:<br>[EMAIL]<br>GitHub · LinkedIn</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  const picks = document.querySelectorAll('[data-room]:not(body)');
+  const hat = document.getElementById('hat');
+  const hats = { listings:'a data person.', break:'a desktop app person.', dance:'a game person.', me:'a person, mostly.' };
+  const idle = ['a data person.', 'a desktop app person.', 'a game person.', 'whoever you need.'];
+  let i = 0;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setInterval(() => { if (!document.body.dataset.room && !still) hat.textContent = idle[++i % idle.length]; }, 1800);
+
+  const show = (key) => {
+    if (hats[key]) { document.body.dataset.room = key; hat.textContent = hats[key]; }
+    else { delete document.body.dataset.room; key = ''; }
+    picks.forEach((b) => b.setAttribute('aria-pressed', b.dataset.room === key));
+  };
+  picks.forEach((b) => b.addEventListener('click', () => {
+    const next = document.body.dataset.room === b.dataset.room ? '' : b.dataset.room;
+    history.pushState(null, '', next ? '#' + next : location.pathname);
+    show(next);
+  }));
+  addEventListener('popstate', () => show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+
+  const desk = document.getElementById('desk');
+  desk.querySelectorAll('.thing').forEach((el) => {
+    let s = null;
+    el.addEventListener('pointerdown', (e) => { s = { x:e.clientX, y:e.clientY, l:el.offsetLeft, t:el.offsetTop }; el.classList.add('dragging'); el.setPointerCapture(e.pointerId); });
+    el.addEventListener('pointermove', (e) => {
+      if (!s) return;
+      el.style.left = Math.max(-30, Math.min(desk.clientWidth - 90, s.l + e.clientX - s.x)) + 'px';
+      el.style.top = Math.max(-20, Math.min(desk.clientHeight - 70, s.t + e.clientY - s.y)) + 'px';
+    });
+    const end = () => { s = null; el.classList.remove('dragging'); };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  });
+</script>
+</body>
+</html>

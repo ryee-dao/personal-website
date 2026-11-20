@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J · Quietly Alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f8f0e3; --card:#fffaf2; --ink:#2a211c; --muted:#77675b; --line:#e6d8c2; --wire:#cfbda3;
+          --clay:#cf5a38; --sage:#5f8257; --honey:#c98a14; --plum:#8a5a7c; --c:var(--clay); --tint:var(--bg); }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1714; --card:#27211c; --ink:#f3e9dc; --muted:#a99a8b; --line:#3b322a; --wire:#574a3e;
+            --clay:#f08a68; --sage:#9dbb95; --honey:#f0c060; --plum:#cf9fc0; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--tint); color:var(--ink); font:16.5px/1.55 ui-sans-serif,system-ui,sans-serif; transition:background .6s; }
+  body[data-room="break"]    { --c:var(--clay);  --tint:color-mix(in srgb,var(--clay) 9%,var(--bg)); }
+  body[data-room="dance"]    { --c:var(--honey); --tint:color-mix(in srgb,var(--honey) 12%,var(--bg)); }
+  body[data-room="listings"] { --c:var(--sage);  --tint:color-mix(in srgb,var(--sage) 11%,var(--bg)); }
+  body[data-room="me"]       { --c:var(--plum);  --tint:color-mix(in srgb,var(--plum) 9%,var(--bg)); }
+  h1,h2,h3 { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; line-height:1.1; margin:0; text-wrap:balance; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  .hand { font-family:Caveat,cursive; font-size:22px; line-height:1.15; }
+  .num { font-variant-numeric:tabular-nums; font-weight:700; color:var(--ink); display:inline-block; transition:color .5s, transform .25s; }
+  .num.tick { color:var(--c); transform:translateY(-2px); transition:none; }
+  .wrap { max-width:1060px; margin:0 auto; padding:0 16px 96px; }
+  svg { overflow:visible; display:block; }
+  .d * { stroke:var(--ink); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; fill:none; vector-effect:non-scaling-stroke; }
+  .d .face { fill:var(--card); } .d .dot { fill:var(--ink); stroke:none; } .d .thin { stroke-width:3; }
+  .d .c1 { fill:var(--clay); } .d .c2 { fill:var(--honey); } .d .c3 { fill:var(--sage); }
+  .d text { font-family:Caveat,cursive; font-size:22px; fill:var(--ink); stroke:none; }
+
+  nav { display:flex; justify-content:space-between; align-items:center; padding:14px 0; font-size:15px; }
+  nav a { color:var(--muted); text-decoration:none; }
+  nav button { background:none; border:1px solid var(--line); border-radius:999px; padding:6px 16px; }
+  nav button[aria-pressed="true"] { background:var(--plum); border-color:var(--plum); color:var(--bg); }
+
+  .intro { padding:2vh 0 18px; }
+  .intro h1 { font-size:clamp(27px,4.2vw,44px); max-width:22ch; }
+  .intro h1 em { font-style:normal; color:var(--c); transition:color .5s; }
+
+  /* the picker: three problems, cards lean toward your cursor */
+  .problems { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .problem { text-align:left; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:12px; border-bottom:5px solid var(--k);
+             display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:center; transition:transform .18s ease-out, box-shadow .2s; will-change:transform; }
+  .problem svg { width:96px; height:auto; background:color-mix(in srgb,var(--k) 13%,transparent); border-radius:12px; }
+  .problem .q { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:18px; line-height:1.2; display:block; }
+  .problem .a { color:var(--muted); font-size:14px; display:block; margin-top:4px; line-height:1.35; }
+  .problem:hover { box-shadow:0 10px 24px rgba(60,35,10,.14); }
+  .problem:focus-visible { outline:3px solid var(--k); outline-offset:3px; }
+  .problem:hover .wig, .problem[aria-pressed="true"] .wig { animation:wig .55s ease-in-out infinite; transform-box:fill-box; transform-origin:50% 100%; }
+  @keyframes wig { 50% { transform:rotate(6deg); } }
+  .problem[aria-pressed="true"] { border-color:var(--k); box-shadow:0 0 0 2px var(--k); }
+  @media (max-width:760px) {
+    .problem { grid-template-columns:1fr; padding:8px; gap:6px; border-radius:16px; }
+    .problem svg { width:100%; } .problem .q { font-size:14px; } .problem .a { display:none; }
+  }
+
+  /* the stage: one demo is always running */
+  .room { display:none; margin-top:14px; gap:12px; }
+  body[data-room="break"] #break, body[data-room="dance"] #dance, body[data-room="listings"] #listings, body[data-room="me"] #me { display:grid; animation:in .4s ease; }
+  @keyframes in { from { opacity:0; transform:translateY(12px); } }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; }
+  .panel h2 { font-size:22px; margin-bottom:6px; } .panel p { margin:0 0 8px; color:var(--muted); }
+  .wire { border:2px dashed var(--wire); border-radius:14px; color:var(--muted); font-size:14px; display:grid; place-items:center; text-align:center; padding:14px; min-height:90px; }
+  .btn { background:var(--ink); color:var(--bg); border:0; border-radius:999px; padding:9px 18px; font-weight:600; }
+  .btn.ghost { background:none; color:var(--ink); border:1px solid var(--line); }
+  @media (min-width:860px) { #break, #dance, #me { grid-template-columns:1fr 300px; } #listings { grid-template-columns:260px 1fr; } }
+
+  /* break: one quiet ring */
+  #break .clock { display:grid; place-items:center; text-align:center; gap:10px; min-height:300px; }
+  .ring { position:relative; width:min(230px,60vw); aspect-ratio:1; }
+  .ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+  .ring circle { fill:none; stroke-width:10; stroke:var(--line); } .ring .prog { stroke:var(--c); stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+  .ring b { position:absolute; inset:0; display:grid; place-items:center; font-family:"Bricolage Grotesque",sans-serif; font-size:54px; font-variant-numeric:tabular-nums; }
+  /* listings: a small dashboard */
+  .chips { display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:14px; }
+  .chips button { border:1px solid var(--line); background:none; border-radius:999px; padding:4px 12px; }
+  .chips button[aria-pressed="true"] { background:var(--c); border-color:var(--c); color:var(--bg); }
+  .chips input { accent-color:var(--c); width:130px; }
+  .stats { display:flex; gap:18px; flex-wrap:wrap; font-size:14px; color:var(--muted); margin:10px 0; }
+  .stats .num { font-family:"Bricolage Grotesque",sans-serif; font-size:22px; display:block; }
+  .bars div { display:grid; grid-template-columns:92px 1fr 44px; gap:8px; align-items:center; font-size:13px; color:var(--muted); margin-top:5px; }
+  .bars i { height:10px; border-radius:6px; background:var(--c); transition:width .4s; min-width:2px; }
+  .tbl { max-height:210px; overflow:auto; margin-top:10px; border-top:1px solid var(--line); }
+  table { width:100%; border-collapse:collapse; font-size:14px; font-variant-numeric:tabular-nums; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; } th { color:var(--muted); font-weight:600; position:sticky; top:0; background:var(--card); }
+  /* dance: dark stage */
+  .floor { background:#1c1613; color:#f3e9dc; border-radius:20px; padding:14px; display:grid; gap:10px; grid-template-columns:1fr 1fr; }
+  .floor .wire { border-color:#6a5a4c; color:#c9b9a8; min-height:230px; } .floor .bar { grid-column:1 / -1; min-height:56px; }
+  .beat { width:14px; height:14px; border-radius:50%; background:var(--honey); display:inline-block; margin-right:8px; animation:beat .6s infinite; } @keyframes beat { 50% { transform:scale(.5); opacity:.4; } }
+  .facts { display:grid; gap:8px; } .facts b { font-family:"Bricolage Grotesque",sans-serif; font-size:24px; color:var(--c); }
+  .links a { display:block; padding:9px 0; border-top:1px solid var(--line); color:var(--ink); font-weight:600; text-decoration:none; }
+
+  /* muted ticker along the bottom */
+  .ticker { position:fixed; left:0; right:0; bottom:0; z-index:5; background:color-mix(in srgb,var(--tint) 90%,transparent); backdrop-filter:blur(8px); border-top:1px solid var(--line); transition:background .6s; }
+  .ticker div { max-width:1060px; margin:0 auto; padding:8px 90px 8px 16px; display:flex; gap:6px 20px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
+
+  /* corner companion */
+  #pal { position:fixed; right:14px; bottom:6px; width:58px; z-index:6; background:none; border:0; padding:0; }
+  #pal svg { width:58px; height:auto; }
+  #palsay { position:fixed; right:78px; bottom:64px; z-index:6; background:var(--card); border:2px solid var(--ink); border-radius:14px; padding:3px 12px; max-width:200px; text-align:center;
+            opacity:0; transform:translateY(4px); transition:opacity .2s, transform .2s; pointer-events:none; }
+  #palsay.on { opacity:1; transform:none; }
+
+  #over { position:fixed; inset:0; z-index:20; background:var(--bg); display:none; place-items:center; text-align:center; padding:24px; }
+  #over.on { display:grid; animation:in .6s ease; }
+  #over h2 { font-size:clamp(28px,5vw,44px); } #over p { color:var(--muted); max-width:40ch; margin:8px auto; }
+  #over .count { font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:76px; color:var(--clay); line-height:1.1; }
+  @media (prefers-reduced-motion: reduce) { body, .ticker, .problem { transition:none; } .room, #over.on, .beat, .problem .wig { animation:none !important; } }
+</style>
+</head>
+<body data-room="break">
+<div class="wrap">
+  <nav><a href="index.html">← skeletons</a><button data-room="me">about me + say hello</button></nav>
+
+  <header class="intro">
+    <h1>Hi, I'm [YOUR NAME]. I build software to fix my own problems. <em>Then other people's.</em></h1>
+  </header>
+
+  <div class="problems">
+    <button class="problem" style="--k:var(--clay)" data-room="break">
+      <svg class="d" viewBox="0 0 200 130" aria-hidden="true">
+        <line x1="30" y1="104" x2="170" y2="104"/><path class="c1" d="M104 100 v-34 h46 v34 z"/><line x1="96" y1="104" x2="158" y2="104"/>
+        <g class="wig"><line x1="66" y1="62" x2="66" y2="100"/><line x1="66" y1="72" x2="100" y2="88"/><line x1="66" y1="78" x2="98" y2="94"/>
+        <circle class="face" cx="66" cy="42" r="20"/><circle class="dot" cx="62" cy="40" r="3"/><circle class="dot" cx="74" cy="40" r="3"/><line class="thin" x1="62" y1="51" x2="74" y2="51"/></g>
+        <text x="150" y="38">2am</text>
+      </svg>
+      <span><span class="q">"I can't stop working."</span><span class="a">So I built a break enforcer that locks me out.</span></span>
+    </button>
+    <button class="problem" style="--k:var(--honey)" data-room="dance">
+      <svg class="d" viewBox="0 0 200 130" aria-hidden="true">
+        <g class="wig"><line x1="100" y1="58" x2="100" y2="92"/><line x1="100" y1="66" x2="72" y2="42"/><line x1="100" y1="66" x2="130" y2="80"/><line x1="100" y1="92" x2="80" y2="120"/><line x1="100" y1="92" x2="124" y2="116"/>
+        <circle class="face" cx="100" cy="38" r="20"/><circle class="dot" cx="94" cy="36" r="3"/><circle class="dot" cx="106" cy="36" r="3"/><path class="thin" d="M93 45 q7 7 14 0"/></g>
+        <text x="38" y="42">♪</text><text x="146" y="108">+100</text>
+      </svg>
+      <span><span class="q">"I hate home workouts."</span><span class="a">So I built a dance game that scores my moves.</span></span>
+    </button>
+    <button class="problem" style="--k:var(--sage)" data-room="listings">
+      <svg class="d" viewBox="0 0 200 130" aria-hidden="true">
+        <path class="c3" d="M118 112 v-36 l28 -24 l28 24 v36 z"/><path d="M110 80 l36 -30 l36 30"/>
+        <g class="wig"><line x1="56" y1="62" x2="56" y2="94"/><line x1="56" y1="72" x2="84" y2="68"/><line x1="56" y1="94" x2="42" y2="120"/><line x1="56" y1="94" x2="70" y2="120"/>
+        <circle class="face" cx="56" cy="42" r="20"/><circle class="dot" cx="54" cy="40" r="3"/><circle class="dot" cx="66" cy="40" r="3"/><circle cx="94" cy="62" r="11"/></g>
+        <text x="134" y="34">$?</text>
+      </svg>
+      <span><span class="q">"Where are the good property deals?"</span><span class="a">So I built a scraper that reads the whole market.</span></span>
+    </button>
+  </div>
+
+  <section class="room" id="break">
+    <div class="panel clock">
+      <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44"/><circle class="prog" id="prog" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><b id="secs">20</b></div>
+      <span class="hand" id="clockmsg">already running. it takes over the screen at zero.</span>
+      <button class="btn ghost" id="again" hidden>Run it again</button>
+    </div>
+    <div class="panel"><h2>Break enforcer</h2><p>I'm a workaholic. I needed something that would actually stop me, not a reminder I could ignore.</p><p>TODO: what I learned, one honest line.</p></div>
+  </section>
+
+  <section class="room" id="dance">
+    <div class="floor">
+      <div class="wire">Target pose</div><div class="wire">Your webcam + skeleton<br>(or keyboard mode)</div>
+      <div class="wire bar"><span><span class="beat"></span>beat running · score <b>0</b> · [ Start camera ] [ Use keyboard ]</span></div>
+    </div>
+    <div class="panel"><h2>Dance game</h2><p>I needed to exercise and I hated HIIT at home. Dancing at a webcam turned out to be cardio I don't dread.</p><p>TODO: what I learned, one honest line.</p></div>
+  </section>
+
+  <section class="room" id="listings">
+    <div class="panel"><h2>Listings scraper</h2><p>I was looking for investment properties and got tired of opening 40 tabs. Sample data here; nothing is scraped on this site.</p><p>TODO: what I learned, one honest line.</p></div>
+    <div class="panel">
+      <div class="chips" id="beds">Beds <button data-b="0" aria-pressed="true">any</button><button data-b="2">2+</button><button data-b="3">3+</button><button data-b="4">4+</button>
+        <label style="margin-left:8px">Max <span class="num" id="maxlab">$600k</span> <input type="range" id="max" min="200" max="600" step="20" value="600" aria-label="Maximum price"></label></div>
+      <div class="stats"><span><span class="num" id="n">0</span>of 16 listings</span><span><span class="num" id="med">$0</span>median price</span><span><span class="num" id="ppsf">$0</span>avg per sq ft</span></div>
+      <div class="bars" id="bars"></div>
+      <div class="tbl"><table><thead><tr><th>Area</th><th>Beds</th><th>Sq ft</th><th>Price</th><th>$/sq ft</th></tr></thead><tbody id="rows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="room" id="me">
+    <div class="panel">
+      <h2>About me</h2><p>TODO: short, warm, first person.</p>
+      <div class="facts">
+        <span><b>2 days</b> to get useful with Claude Code</span>
+        <span><b>2 weeks</b> to learn Java for a real job</span>
+        <span><b>Every month</b> I swap between Pennsylvania and Virginia and rebuild my whole routine</span>
+      </div>
+    </div>
+    <div class="panel links"><h2>Say hello</h2><a href="#">[EMAIL] →</a><a href="#">GitHub →</a><a href="#">LinkedIn →</a></div>
+  </section>
+</div>
+
+<div class="ticker"><div>
+  <span>here <span class="num" id="t-here">0:00</span></span>
+  <span><span class="num" id="t-px">0</span> px moved</span>
+  <span><span class="num" id="t-clicks">0</span> clicks</span>
+  <span><span class="num" id="t-tried">1</span>/3 demos tried</span>
+</div></div>
+
+<button id="pal" aria-label="The little guy">
+  <svg class="d" viewBox="0 0 80 130" aria-hidden="true">
+    <line x1="40" y1="40" x2="40" y2="84"/><line id="aL"/><line id="aR"/><line id="lL"/><line id="lR"/>
+    <circle class="face" cx="40" cy="22" r="18"/>
+    <g id="eyes"><circle class="dot" cx="34" cy="20" r="3"/><circle class="dot" cx="46" cy="20" r="3"/></g>
+    <path class="thin" id="shut" d="M30 20 h8 M42 20 h8" visibility="hidden"/><path class="thin" d="M34 29 q6 5 12 0"/>
+  </svg>
+</button>
+<div id="palsay" class="hand"></div>
+
+<div id="over" role="dialog" aria-modal="true" aria-label="Break time">
+  <div><h2>Break time. Hands off.</h2><p>On my machine there's no skip button, because I don't stop on my own.</p><div class="count" id="count">8</div><button class="btn ghost" id="bskip">demo: skip</button></div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mmss = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  const tick = (id, v) => { const n = $(id); v = String(v); if (n.textContent === v) return; n.textContent = v; n.classList.add('tick'); clearTimeout(n._t); n._t = setTimeout(() => n.classList.remove('tick'), 160); };
+
+  // ---- corner companion ----
+  const pal = { state: 'idle', a: [0.25, -0.25, 0.12, -0.12], until: 0 };
+  const palPose = (t) => {
+    if (pal.state === 'wave') return [Math.PI - 0.5 + Math.sin(t * 16) * 0.4, -0.25, 0.12, -0.12];
+    if (pal.state === 'cheer') return [Math.PI - 0.5 + Math.sin(t * 18) * 0.3, Math.PI + 0.5 - Math.sin(t * 18) * 0.3, 0.3, -0.3];
+    if (pal.state === 'sleep') return [0.5, -0.5, 1.2, -1.2];
+    return [0.25, -0.25, 0.12, -0.12];
+  };
+  let sayT;
+  const say = (text, ms = 2000) => { $('palsay').textContent = text; $('palsay').classList.add('on'); clearTimeout(sayT); if (ms) sayT = setTimeout(() => $('palsay').classList.remove('on'), ms); };
+  const act = (state, text, ms = 1400) => { pal.state = state; pal.until = performance.now() + ms; if (text) say(text, ms + 600); };
+  let prev = performance.now(), lastInput = prev;
+  const frame = (ts) => {
+    const dt = Math.min(0.033, (ts - prev) / 1000), t = ts / 1000; prev = ts;
+    if (pal.until && ts > pal.until && pal.state !== 'sleep') { pal.state = 'idle'; pal.until = 0; }
+    if (pal.state === 'idle' && ts - lastInput > 10000) { pal.state = 'sleep'; say('z z z', 0); }
+    const want = palPose(t); pal.a = pal.a.map((v, i) => v + (want[i] - v) * Math.min(1, dt * 14));
+    const limb = (id, x, y, ang, L) => { const n = $(id); n.setAttribute('x1', x); n.setAttribute('y1', y); n.setAttribute('x2', x + Math.sin(ang) * L); n.setAttribute('y2', y + Math.cos(ang) * L); };
+    limb('aL', 40, 50, pal.a[0], 30); limb('aR', 40, 50, pal.a[1], 30); limb('lL', 40, 84, pal.a[2], 40); limb('lR', 40, 84, pal.a[3], 40);
+    const hop = pal.state === 'cheer' ? Math.abs(Math.sin(t * 9)) * 8 : 0, sit = pal.state === 'sleep' ? 26 : 0;
+    $('pal').style.transform = `translateY(${sit - hop}px)`;
+    $('eyes').setAttribute('visibility', pal.state === 'sleep' ? 'hidden' : 'visible'); $('shut').setAttribute('visibility', pal.state === 'sleep' ? 'visible' : 'hidden');
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  const lines = ['yes?', 'that\'s me.', 'try the house one.', 'I built this page.'];
+  $('pal').onclick = () => act('wave', lines[Math.floor(Math.random() * lines.length)]);
+
+  // ---- numbers that tick ----
+  let px = 0, clicks = 0, lastP = null, wiggle = 0, here = 0;
+  const wake = () => { lastInput = performance.now(); if (pal.state === 'sleep' && !$('over').classList.contains('on')) { pal.state = 'idle'; say('I\'m up.', 1200); } };
+  addEventListener('pointermove', (e) => {
+    wake();
+    const r = $('pal').getBoundingClientRect(), ang = Math.atan2(e.clientY - (r.top + 10), e.clientX - (r.left + r.width / 2));
+    $('eyes').setAttribute('transform', `translate(${Math.cos(ang) * 3} ${Math.sin(ang) * 2.5})`);
+    if (lastP) { const d = Math.hypot(e.clientX - lastP.x, e.clientY - lastP.y); px += d; wiggle += d; }
+    lastP = { x: e.clientX, y: e.clientY };
+    tick('t-px', Math.round(px).toLocaleString());
+    if (wiggle > 2800 && pal.state === 'idle') { wiggle = 0; act('wave', 'hi!', 1100); }
+  });
+  let lastY = scrollY;
+  addEventListener('scroll', () => { wake(); px += Math.abs(scrollY - lastY); lastY = scrollY; tick('t-px', Math.round(px).toLocaleString()); }, { passive: true });
+  addEventListener('click', () => { wake(); tick('t-clicks', ++clicks); });
+  addEventListener('keydown', wake);
+  setInterval(() => wiggle *= 0.5, 400);
+
+  // ---- cards that lean toward the cursor ----
+  if (!still && matchMedia('(hover: hover)').matches) document.querySelectorAll('.problem').forEach((c) => {
+    c.addEventListener('pointermove', (e) => { const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5; c.style.transform = `perspective(700px) rotateX(${-y * 9}deg) rotateY(${x * 9}deg) translateY(-3px)`; });
+    c.addEventListener('pointerleave', () => c.style.transform = '');
+  });
+
+  // ---- the picker ----
+  const tried = new Set(['break']);
+  const cheers = { dance: 'this counts as cardio.', listings: 'ooh, numbers.', break: 'uh oh. the timer.', me: 'that\'s the real one.' };
+  const show = (key, quiet) => {
+    if (!cheers[key]) key = 'break';
+    document.body.dataset.room = key;
+    document.querySelectorAll('[data-room]:not(body)').forEach((b) => b.setAttribute('aria-pressed', b.dataset.room === key));
+    if (key !== 'me') { tried.add(key); tick('t-tried', tried.size); }
+    if (!quiet) { if (tried.size === 3 && !show.done) { show.done = true; act('cheer', 'all three! say hello?', 2200); } else act('cheer', cheers[key], 900); }
+    if (key === 'listings') render();
+  };
+  document.querySelectorAll('[data-room]:not(body)').forEach((b) => b.addEventListener('click', () => { history.replaceState(null, '', '#/' + b.dataset.room); show(b.dataset.room); }));
+
+  // ---- demo 1: break enforcer, already running ----
+  const WORK = 20, REST = 8, C = 276.5;
+  let left = WORK, rest = 0, armed = true;
+  const drawClock = () => { $('secs').textContent = left; $('prog').style.strokeDashoffset = C * (1 - left / WORK); };
+  const endBreak = () => { rest = 0; $('over').classList.remove('on'); pal.state = 'idle'; say('see? you survived.', 1800); $('clockmsg').textContent = 'that\'s it. on my machine it\'s every 50 minutes.'; $('again').hidden = false; };
+  $('bskip').onclick = endBreak;
+  $('again').onclick = () => { left = WORK; armed = true; $('again').hidden = true; $('clockmsg').textContent = 'running. it takes over the screen at zero.'; drawClock(); };
+  setInterval(() => {
+    tick('t-here', mmss(++here));
+    if (rest > 0) { $('count').textContent = --rest; if (rest === 0) endBreak(); return; }
+    if (!armed || document.body.dataset.room !== 'break') return;   // only counts while you're looking at it
+    left--; drawClock();
+    if (left <= 0) { armed = false; rest = REST; $('count').textContent = REST; $('over').classList.add('on'); pal.state = 'sleep'; $('palsay').classList.remove('on'); $('bskip').focus(); }
+  }, 1000);
+  drawClock();
+
+  // ---- demo 3: sample listings ----
+  const areas = ['Riverside', 'Old Town', 'Maple Hill', 'Northgate'];
+  const data = Array.from({ length: 16 }, (_, i) => { const beds = 1 + (i * 7) % 5, sqft = 700 + beds * 330 + (i * 97) % 400, rate = 150 + (i % 4) * 28 + (i * 13) % 40; return { area: areas[i % 4], beds, sqft, price: Math.round(sqft * rate / 1000) * 1000 }; });
+  let minBeds = 0;
+  const money = (n) => '$' + Math.round(n / 1000) + 'k';
+  const render = () => {
+    const max = +$('max').value * 1000; $('maxlab').textContent = money(max);
+    const rows = data.filter((d) => d.beds >= minBeds && d.price <= max).sort((a, b) => a.price - b.price);
+    $('rows').innerHTML = rows.map((d) => `<tr><td>${d.area}</td><td>${d.beds}</td><td>${d.sqft.toLocaleString()}</td><td>${money(d.price)}</td><td>$${Math.round(d.price / d.sqft)}</td></tr>`).join('') || '<tr><td colspan="5">Nothing matches. Loosen a filter.</td></tr>';
+    tick('n', rows.length + ' ');
+    tick('med', rows.length ? money(rows[Math.floor(rows.length / 2)].price) : '–');
+    tick('ppsf', rows.length ? '$' + Math.round(rows.reduce((s, d) => s + d.price / d.sqft, 0) / rows.length) : '–');
+    $('bars').innerHTML = areas.map((a) => { const r = rows.filter((d) => d.area === a), v = r.length ? Math.round(r.reduce((s, d) => s + d.price / d.sqft, 0) / r.length) : 0; return `<div><span>${a}</span><i style="width:${Math.min(100, v / 3)}%"></i><span>${v ? '$' + v : '–'}</span></div>`; }).join('');
+  };
+  $('max').addEventListener('input', render);
+  $('beds').querySelectorAll('button').forEach((b) => b.onclick = () => { minBeds = +b.dataset.b; $('beds').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); render(); });
+
+  show(location.hash.slice(2) || 'break', true);
+  setTimeout(() => say(document.body.dataset.room === 'break' ? 'hi. the timer\'s already going.' : 'hi. poke around.', 2600), 700);
+</script>
+</body>
+</html>
