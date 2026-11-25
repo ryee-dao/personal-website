@@ -109,7 +109,7 @@ export const problems: Problem[] = [
 export const about = {
   heading: 'About me',
   // Your photo: put the file in the public/ folder and write its name here, e.g. 'me.jpg'. Until then your initials show.
-  photo: '',
+  photo: 'portrait.jpeg',
   // DRAFT. Rewrite in your own words.
   paragraphs: [
     "I'm an independent software developer. I build dashboards, automations and small tools, usually starting from something a person is tired of doing by hand.",
