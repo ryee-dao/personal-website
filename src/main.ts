@@ -130,23 +130,50 @@ problems.forEach((p) => {
     paintTracker();
   };
 
+  // the hidden slider is for the keyboard; touch and mouse drag the panel itself (below)
   input.addEventListener('input', () => {
     cmp.classList.add('touched');
     paint(+input.value);
     if (+input.value <= DONE) fix();
   });
-  fixBtn.addEventListener('click', () => {
+  const slideToFixed = () => {
     cmp.classList.add('touched');
     if (reducedMotion()) return fix();
     const from = +input.value, t0 = performance.now();
     const step = (t: number) => {
-      const kk = Math.min(1, (t - t0) / 600), v = from * (1 - kk * kk);
+      const kk = Math.min(1, Math.max(0, (t - t0) / 600)), v = from * (1 - kk * kk);
       input.value = String(v);
       paint(v);
       if (kk < 1) requestAnimationFrame(step); else fix();
     };
     requestAnimationFrame(step);
+  };
+  fixBtn.addEventListener('click', slideToFixed);
+
+  // Drag from anywhere on the panel, not just the round handle. Sideways movement drags;
+  // up-and-down movement is left to the browser so the page still scrolls.
+  let drag: { id: number; x: number; from: number } | null = null;
+  cmp.addEventListener('pointerdown', (e) => {
+    if (fixedIds.has(p.id) || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    drag = { id: e.pointerId, x: e.clientX, from: +input.value };
+    try { cmp.setPointerCapture(e.pointerId); } catch { /* the drag still works without capture */ }
   });
+  cmp.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id || fixedIds.has(p.id)) return;
+    const v = Math.min(100, Math.max(0, drag.from + ((e.clientX - drag.x) / cmp.clientWidth) * 100));
+    cmp.classList.add('touched', 'dragging');
+    input.value = String(v);
+    paint(v);
+    if (v <= DONE) { drag = null; cmp.classList.remove('dragging'); fix(); }
+  });
+  const endDrag = (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag = null;
+    cmp.classList.remove('dragging');
+    if (!fixedIds.has(p.id) && +input.value < 55) slideToFixed(); // past halfway: finish the job
+  };
+  cmp.addEventListener('pointerup', endDrag);
+  cmp.addEventListener('pointercancel', endDrag);
   undoBtn.addEventListener('click', unfix);
   paint(START);
   if (params.has('open')) fix(); // add ?open to the URL to start with every demo open
