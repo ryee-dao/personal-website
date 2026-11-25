@@ -125,6 +125,8 @@ export function mountDance(el: HTMLElement): Demo {
     nowEl.textContent = current.name; nextEl.textContent = next.name;
     q<HTMLElement>('.dd-count').textContent = String(done);
   };
+  let onScreen = true;
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(el);
   const frame = (ts: number) => {
     if (!playing) return;
     const dt = Math.min(0.1, (ts - lastTs) / 1000); lastTs = ts;
@@ -133,8 +135,11 @@ export function mountDance(el: HTMLElement): Demo {
     if (idx !== moveIdx) { if (moveIdx >= 0) { current = next; next = pick(current); done++; } moveIdx = idx; paintCards(); }
     // ease into each move over its first half beat so no move flashes by
     const prev = inMove < 0.5 && done > 0 ? blend(lastFrame, current.pose(inMove), inMove * 2) : current.pose(inMove);
-    drawFrame(prev); if (inMove >= 0.5) lastFrame = prev;
-    dots.forEach((d, i) => d.classList.toggle('on', i <= Math.floor(inMove)));
+    if (inMove >= 0.5) lastFrame = prev;
+    if (onScreen) { // the beat keeps time off screen, but nothing is redrawn
+      drawFrame(prev);
+      dots.forEach((d, i) => d.classList.toggle('on', i <= Math.floor(inMove)));
+    }
     scheduleSound();
     raf = requestAnimationFrame(frame);
   };

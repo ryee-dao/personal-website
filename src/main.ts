@@ -154,8 +154,16 @@ problems.forEach((p) => {
   // the little guy cheers up as you drag
   const draw = makeGuy(sec.querySelector<SVGSVGElement>('.mess svg')!);
   const sad: Pose = p.before.pose;
-  guys.push((t) => { if (!fixedIds.has(p.id)) draw(progress > 0.6 ? 'dance' : sad, t); });
+  // only animate the figure while its panel is on screen and still shows the "before"
+  let onScreen = false;
+  new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(cmp);
+  guys.push((t) => { if (onScreen && !fixedIds.has(p.id)) draw(progress > 0.6 ? 'dance' : sad, t); });
 });
 
-const loop = (ts: number) => { guys.forEach((g) => g(ts / 1000)); requestAnimationFrame(loop); };
+// about 30 frames a second is plenty for the figures and halves the work
+let lastDraw = 0;
+const loop = (ts: number) => {
+  if (ts - lastDraw >= 32 && !document.hidden) { lastDraw = ts; guys.forEach((g) => g(ts / 1000)); }
+  requestAnimationFrame(loop);
+};
 requestAnimationFrame(loop);

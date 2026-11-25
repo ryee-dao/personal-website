@@ -40,7 +40,7 @@ export function makeGuy(svg: SVGSVGElement) {
 
   return function draw(pose: Pose, t: number, bpm = 110) {
     const want = poses[pose](((t * bpm) / 60) * Math.PI, t);
-    cur = cur.map((v, i) => v + (want[i] - v) * 0.25);
+    cur = cur.map((v, i) => v + (want[i] - v) * 0.4);
     limbs.forEach((n, i) => {
       const [x, y, len] = BASE[i];
       n.setAttribute('x1', String(x));
@@ -48,7 +48,7 @@ export function makeGuy(svg: SVGSVGElement) {
       n.setAttribute('x2', String(x + Math.sin(cur[i]) * len));
       n.setAttribute('y2', String(y + Math.cos(cur[i]) * len));
     });
-    mood += (MOOD[pose] - mood) * 0.2;
+    mood += (MOOD[pose] - mood) * 0.35;
     mouth.setAttribute('d', `M35 33.5Q40 ${(33.5 + mood).toFixed(2)} 45 33.5`);
     desk.style.display = pose === 'type' ? '' : 'none';
     svg.style.transform = `translateY(${(want[4] / 130) * 100}%)`;

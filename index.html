@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Only this site's own code may run; fonts come from Google Fonts; nothing may be embedded or posted elsewhere. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Ryan Dao · I build software that fixes real problems</title>
     <meta name="description" content="I build software: dashboards, data pipelines and the tools around them. Three projects you can try in your browser, including Realist, a home-sale analytics dashboard." />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
