@@ -1,14 +1,16 @@
 import './styles.css';
-import { site, problems, about, contact, tracker, type Problem, type DemoId } from './content';
+import { site, problems, contact, tracker, type Problem, type DemoId } from './content';
 import { makeGuy, type Pose } from './guy';
 import type { Demo } from './demos/types';
 import { reducedMotion } from './demos/types';
 import { mountBreak } from './demos/breakDemo';
 import { mountDance } from './demos/danceDemo';
-import { mountListings } from './demos/listingsDemo';
+import { mountRealist } from './demos/realistDemo';
+import { esc, storyHTML, workHTML } from './parts';
 
-const mounts: Record<DemoId, (el: HTMLElement) => Demo> = { break: mountBreak, dance: mountDance, listings: mountListings };
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const params = new URLSearchParams(location.search);
+const mounts: Record<DemoId, (el: HTMLElement) => Demo> = { break: mountBreak, dance: mountDance, realist: mountRealist };
+
 
 const START = 88; // where the divider sits before you touch it (% from the left)
 const DONE = 12; // drag past this and the problem counts as fixed
@@ -30,11 +32,7 @@ const problemHTML = (p: Problem) => `
       <div class="side after">
         <div class="in">
           <div class="story">
-            <span class="tag">after · ${esc(p.after.tag)}</span>
-            <h3>${esc(p.after.title)}</h3>
-            <p>${esc(p.after.why)}</p>
-            <p class="learned">${esc(p.after.learned)}</p>
-            <a class="btn" href="${esc(p.after.link.url)}" target="_blank" rel="noopener">${esc(p.after.link.label)} ↗</a>
+            ${storyHTML(p)}
           </div>
           <div class="demo"></div>
         </div>
@@ -53,17 +51,15 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="wrap">
     <nav>
       <a class="brand" href="#top">${esc(site.name)}</a>
-      <span><a href="#about">About</a><a href="#contact">Contact</a><button class="theme" aria-label="Switch between light and dark">◐</button></span>
+      <span><a href="#work">Work with me</a><a href="#contact">Contact</a><button class="theme" aria-label="Switch between light and dark">◐</button></span>
     </nav>
     <header class="intro" id="top">
       <h1>${esc(site.headline.replace('{name}', site.name))} <em>${esc(site.headlineAccent)}</em></h1>
-      <p>${esc(site.intro)}</p>
+      <p>${site.intro.map(esc).join('<br>')}</p>
     </header>
     <main>${problems.map(problemHTML).join('')}</main>
-    <section class="card about" id="about">
-      <h2>${esc(about.heading)}</h2>
-      ${about.paragraphs.map((t) => `<p>${esc(t)}</p>`).join('')}
-      <div class="facts">${about.facts.map((f) => `<span><b class="num">${esc(f.big)}</b>${esc(f.small)}</span>`).join('')}</div>
+    <section class="card work" id="work" style="--k:var(--brand)">
+      ${workHTML()}
     </section>
     <section class="card contact" id="contact">
       <h2>${esc(contact.heading)}</h2>
@@ -100,6 +96,7 @@ problems.forEach((p) => {
   const sec = document.getElementById(p.id)!;
   const cmp = sec.querySelector<HTMLElement>('.cmp')!, input = sec.querySelector<HTMLInputElement>('.divider')!;
   const meter = sec.querySelector<HTMLElement>('.meter .num')!;
+  const tabIcons = [...sec.querySelectorAll<HTMLElement>('.tabs i')]; // the pile of browser tabs thins out as you drag
   const fixBtn = sec.querySelector<HTMLButtonElement>('.fix')!, undoBtn = sec.querySelector<HTMLButtonElement>('.undo')!;
   const demo = mounts[p.id](sec.querySelector<HTMLElement>('.demo')!);
   let progress = 0;
@@ -108,7 +105,9 @@ problems.forEach((p) => {
     progress = Math.min(1, Math.max(0, (START - v) / (START - DONE)));
     cmp.style.setProperty('--x', v + '%');
     meter.textContent = Math.round(p.meter.from + (p.meter.to - p.meter.from) * progress) + p.meter.unit;
-    meter.classList.toggle('good', progress > 0.6);
+    meter.style.setProperty('--p', Math.round(progress * 100) + '%'); // the number slides from red to blue
+    const left = Math.round(p.meter.from + (p.meter.to - p.meter.from) * progress);
+    tabIcons.forEach((t, i) => { t.style.visibility = i < left ? '' : 'hidden'; });
   };
   const fix = () => {
     if (fixedIds.has(p.id)) return;
@@ -150,7 +149,7 @@ problems.forEach((p) => {
   });
   undoBtn.addEventListener('click', unfix);
   paint(START);
-  if (new URLSearchParams(location.search).has('open')) fix(); // add ?open to the URL to start with every demo open
+  if (params.has('open')) fix(); // add ?open to the URL to start with every demo open
 
   // the little guy cheers up as you drag
   const draw = makeGuy(sec.querySelector<SVGSVGElement>('.mess svg')!);

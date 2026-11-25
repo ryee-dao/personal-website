@@ -13,9 +13,9 @@ Add `?open` to the URL to load with all three demos already open.
 
 ## Edit the words
 
-Everything you can read on the site is in **`src/content.ts`**: name, email, links, the three problems, About and Contact. Placeholders are in `[SQUARE BRACKETS]` or start with `TODO`.
+Everything you can read on the site is in **`src/content.ts`**: name, email, links, the three problems, About and Contact. Placeholders start with `TODO`; placeholder "learned" lines and About paragraphs stay off the page until you replace them.
 
-Colours are the variables at the top of `src/styles.css`.
+Colours and fonts are the variables at the top of `src/styles.css`. The layout and fonts (Inter and JetBrains Mono) follow [Realist](https://ryandao.dev/realist/), with blue as the main colour.
 
 ## Where things are
 
@@ -27,7 +27,8 @@ Colours are the variables at the top of `src/styles.css`.
 | `src/guy.ts` | The little stick figure |
 | `src/demos/breakDemo.ts` | Break enforcer: the window that grows over the site |
 | `src/demos/danceDemo.ts` | Dance coach: animated figure, generated beat |
-| `src/demos/listingsDemo.ts` | Listings: made-up sample data, nothing is scraped |
+| `src/demos/realistDemo.ts` | Realist: two screens of the dashboard in tabs, on made-up sample data |
+| `src/parts.ts` | The text beside each demo and the About card |
 | `public/CNAME` | The custom domain (ryandao.dev) |
 
 ## Deploy to GitHub Pages
